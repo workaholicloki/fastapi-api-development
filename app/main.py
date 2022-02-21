@@ -1,15 +1,13 @@
-from fastapi import FastAPI, Response, status, HTTPException, Depends
+from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from . import models, schemas
-from .database import engine, get_db
-from sqlalchemy.orm import Session
-from typing import List
-
+from . import models
+from .database import engine
+from .routers import users, accounts
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-@app.get("/",response_class=HTMLResponse)
+@app.get("/",response_class=HTMLResponse, include_in_schema= False )
 def read_root():
     welcome_msg='''
                 <html>
@@ -181,57 +179,5 @@ def read_root():
                 '''
     return welcome_msg
 
-#get all users
-@app.get("/users", response_model=List[schemas.ResponseUser])
-def get_users(db: Session=Depends(get_db)):
-    # cur.execute("SELECT * FROM users;")
-    # records = cur.fetchall()
-    result = db.query(models.Users).all()
-    return result
-
-#create user request
-@app.post("/users",status_code=status.HTTP_201_CREATED, response_model= schemas.ResponseUser)
-def add_user(data: schemas.CreateUser, db: Session = Depends(get_db)):
-    # cur.execute("INSERT INTO users (name, occupation, age) VALUES ('{0}', '{1}', '{2}') RETURNING *;".format(str(data.name),str(data.occupation),data.age))
-    # result=cur.fetchone()
-    # conn.commit()
-    result = models.Users(**data.dict())
-    db.add(result)
-    db.commit()
-    db.refresh(result)
-    return result
-
-#get specific user
-@app.get("/users/{id}", response_model= schemas.ResponseUser)
-def get_user(id: int, response: Response, db: Session=Depends(get_db)):
-    # cur.execute("SELECT * FROM users where id=%s;"%str(id))
-    # user=cur.fetchone()
-    user = db.query(models.Users).filter(models.Users.id == id).first()
-    if user == None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="User not found")
-    return user    
-
-#delete user
-@app.delete("/users/{id}",status_code=status.HTTP_204_NO_CONTENT)
-def del_user(id: int, response: Response, db: Session=Depends(get_db)):
-    # cur.execute("DELETE FROM users where id=%s returning *;"%str(id))
-    user = db.query(models.Users).filter(models.Users.id == id)
-    if user.first() == None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="User not found")
-    user.delete(synchronize_session=False)
-    db.commit()
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-#update user
-@app.put("/users/{id}",status_code=status.HTTP_201_CREATED, response_model= schemas.ResponseUser)
-def update_user(id:int,users: schemas.UpdateUser, response: Response, db: Session=Depends(get_db)):
-    # cur.execute("UPDATE users SET name='{}', occupation='{}', age='{}' where id = '{}' RETURNING *;".format(str(users.name),str(users.occupation),str(users.age), str(id)))
-    # result = cur.fetchone()
-    # conn.commit()
-    user = db.query(models.Users).filter(models.Users.id == id)
-    if user.first() == None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="User not found")
-    
-    user.update(users.dict(),synchronize_session=False)
-    db.commit()
-    return user.first()
+app.include_router(users.router)
+app.include_router(accounts.router)
