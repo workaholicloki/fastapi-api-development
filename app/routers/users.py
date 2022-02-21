@@ -57,8 +57,7 @@ def update_user(id:int,users: schemas.UpdateUser, response: Response, db: Sessio
     # conn.commit()
     user = db.query(models.Users).filter(models.Users.id == id)
     if user.first() == None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="User not found")
-    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="User not found") 
     user.update(users.dict(),synchronize_session=False)
     db.commit()
     return user.first()
