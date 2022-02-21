@@ -1,3 +1,5 @@
+from datetime import datetime
+from venv import create
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 
@@ -6,15 +8,21 @@ class UsersBase(BaseModel):
     occupation: Optional[str] = ""
     age: int
 
-class CreateUser(UsersBase):
+class Signup(BaseModel):
     email: EmailStr
     password: str
-    pass
+
+class Userout(BaseModel):
+    id: str
+    email: EmailStr
+    created_at: datetime
+    
+    class Config:
+        orm_mode = True
 
 class UpdateUser(UsersBase):
     pass
 
 class ResponseUser(UsersBase):
-    email: EmailStr
     class Config:
         orm_mode = True
