@@ -20,6 +20,10 @@ class Userout(BaseModel):
     class Config:
         orm_mode = True
 
+class Login(BaseModel):
+    email: EmailStr
+    password: str
+
 class UpdateUser(UsersBase):
     pass
 

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from . import models
 from .database import engine
-from .routers import users, accounts
+from .routers import users, accounts, auth
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -181,3 +181,4 @@ def read_root():
 
 app.include_router(users.router)
 app.include_router(accounts.router)
+app.include_router(auth.router)
