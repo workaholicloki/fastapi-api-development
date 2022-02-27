@@ -1,5 +1,5 @@
 from fastapi import Response, status, HTTPException, Depends, APIRouter
-from .. import models, schemas
+from .. import models, schemas, oauth2
 from sqlalchemy.orm import Session
 from typing import List
 from ..database import  get_db
@@ -10,18 +10,20 @@ router = APIRouter(
 )
 #get all users
 @router.get("/", response_model=List[schemas.ResponseUser])
-def get_users(db: Session=Depends(get_db)):
+def get_users(db: Session=Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
     # cur.execute("SELECT * FROM users;")
     # records = cur.fetchall()
+    print(user_id)
     result = db.query(models.Users).all()
     return result
 
 #create user request
 @router.post("/",status_code=status.HTTP_201_CREATED, response_model= schemas.ResponseUser)
-def add_user(data: schemas.UsersBase, db: Session = Depends(get_db)):
+def add_user(data: schemas.UsersBase, db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
     # cur.execute("INSERT INTO users (name, occupation, age) VALUES ('{0}', '{1}', '{2}') RETURNING *;".format(str(data.name),str(data.occupation),data.age))
     # result=cur.fetchone()
     # conn.commit()
+    print(user_id)
     result = models.Users(**data.dict())
     db.add(result)
     db.commit()
@@ -30,7 +32,7 @@ def add_user(data: schemas.UsersBase, db: Session = Depends(get_db)):
 
 #get specific user
 @router.get("/{id}", response_model= schemas.ResponseUser)
-def get_user(id: int, response: Response, db: Session=Depends(get_db)):
+def get_user(id: int, response: Response, db: Session=Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
     # cur.execute("SELECT * FROM users where id=%s;"%str(id))
     # user=cur.fetchone()
     user = db.query(models.Users).filter(models.Users.id == id).first()
@@ -40,7 +42,7 @@ def get_user(id: int, response: Response, db: Session=Depends(get_db)):
 
 #delete user
 @router.delete("/{id}",status_code=status.HTTP_204_NO_CONTENT)
-def del_user(id: int, response: Response, db: Session=Depends(get_db)):
+def del_user(id: int, response: Response, db: Session=Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
     # cur.execute("DELETE FROM users where id=%s returning *;"%str(id))
     user = db.query(models.Users).filter(models.Users.id == id)
     if user.first() == None:
@@ -51,7 +53,7 @@ def del_user(id: int, response: Response, db: Session=Depends(get_db)):
 
 #update user
 @router.put("/{id}",status_code=status.HTTP_201_CREATED, response_model= schemas.ResponseUser)
-def update_user(id:int,users: schemas.UpdateUser, response: Response, db: Session=Depends(get_db)):
+def update_user(id:int,users: schemas.UpdateUser, response: Response, db: Session=Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
     # cur.execute("UPDATE users SET name='{}', occupation='{}', age='{}' where id = '{}' RETURNING *;".format(str(users.name),str(users.occupation),str(users.age), str(id)))
     # result = cur.fetchone()
     # conn.commit()

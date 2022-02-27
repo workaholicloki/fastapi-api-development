@@ -4,6 +4,7 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 
 class UsersBase(BaseModel):
+    id: int
     name: str
     occupation: Optional[str] = ""
     age: int
@@ -26,6 +27,13 @@ class Login(BaseModel):
 
 class UpdateUser(UsersBase):
     pass
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    id: Optional[str] = None
 
 class ResponseUser(UsersBase):
     class Config:
