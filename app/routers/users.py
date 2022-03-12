@@ -1,3 +1,4 @@
+from click import get_current_context
 from fastapi import Response, status, HTTPException, Depends, APIRouter
 from .. import models, schemas, oauth2
 from sqlalchemy.orm import Session
@@ -22,7 +23,7 @@ def add_user(data: schemas.UsersBase, db: Session = Depends(get_db), current_use
     # cur.execute("INSERT INTO users (name, occupation, age) VALUES ('{0}', '{1}', '{2}') RETURNING *;".format(str(data.name),str(data.occupation),data.age))
     # result=cur.fetchone()
     # conn.commit()
-    result = models.Users(**data.dict())
+    result = models.Users(login_id=current_user.id, **data.dict())
     db.add(result)
     db.commit()
     db.refresh(result)

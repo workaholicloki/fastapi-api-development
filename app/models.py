@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, false
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from .database import Base
@@ -10,6 +10,7 @@ class Users(Base):
     occupation = Column(String, nullable=True)
     age = Column(Integer, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()')) 
+    login_id = Column(Integer,ForeignKey("login.id", ondelete="CASCADE"), nullable=False)
 
 class Login(Base):
     __tablename__ = "login"
