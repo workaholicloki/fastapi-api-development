@@ -1,4 +1,3 @@
-from click import pass_context
 from passlib.context import CryptContext
 from tkinter.tix import AUTO
 

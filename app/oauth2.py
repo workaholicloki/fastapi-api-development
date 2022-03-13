@@ -1,4 +1,3 @@
-from pyexpat import model
 from fastapi import status, HTTPException
 from fastapi import Depends
 from jose import JWTError, jwt
@@ -6,11 +5,12 @@ from datetime import datetime, timedelta
 from . import schemas, database, models
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+from .config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-SECRET_KEY = "24276c8fafd6146cfc45abef146fd0555fc946a15852643c59e24b4c33f22ad4"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+SECRET_KEY = settings.secret_key
+ALGORITHM = settings.algorithm
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expiry_minutes
 
 def create_access_token(data: dict):
     to_encode = data.copy()

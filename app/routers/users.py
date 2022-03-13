@@ -1,8 +1,7 @@
-from click import get_current_context
 from fastapi import Response, status, HTTPException, Depends, APIRouter
 from .. import models, schemas, oauth2
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from ..database import  get_db
 
 router = APIRouter(
@@ -11,10 +10,10 @@ router = APIRouter(
 )
 #get all users
 @router.get("/", response_model=List[schemas.ResponseUser])
-def get_users(db: Session=Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+def get_users(db: Session=Depends(get_db), current_user: int = Depends(oauth2.get_current_user), limit: int = 10, skip: int = 0, search: Optional[str] = "" ):
     # cur.execute("SELECT * FROM users;")
     # records = cur.fetchall()
-    result = db.query(models.Users).all()
+    result = db.query(models.Users).filter(models.Users.name.contains(search)).limit(limit).offset(skip).all()
     return result
 
 #create user request
@@ -37,16 +36,22 @@ def get_user(id: int, response: Response, db: Session=Depends(get_db), current_u
     user = db.query(models.Users).filter(models.Users.id == id).first()
     if user == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="User not found")
+    if user.login_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform this action")
     return user    
 
 #delete user
 @router.delete("/{id}",status_code=status.HTTP_204_NO_CONTENT)
 def del_user(id: int, response: Response, db: Session=Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     # cur.execute("DELETE FROM users where id=%s returning *;"%str(id))
-    user = db.query(models.Users).filter(models.Users.id == id)
-    if user.first() == None:
+    user_query = db.query(models.Users).filter(models.Users.id == id)
+    user = user_query.first()
+    if user == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="User not found")
-    user.delete(synchronize_session=False)
+    if user.login_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform this action")
+
+    user_query.delete(synchronize_session=False)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -56,9 +61,12 @@ def update_user(id:int,users: schemas.UpdateUser, response: Response, db: Sessio
     # cur.execute("UPDATE users SET name='{}', occupation='{}', age='{}' where id = '{}' RETURNING *;".format(str(users.name),str(users.occupation),str(users.age), str(id)))
     # result = cur.fetchone()
     # conn.commit()
-    user = db.query(models.Users).filter(models.Users.id == id)
-    if user.first() == None:
+    user_query = db.query(models.Users).filter(models.Users.id == id)
+    user = user_query.first() 
+    if user == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="User not found") 
-    user.update(users.dict(),synchronize_session=False)
+    if user.login_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not authorized to perform this action")
+    user_query.update(users.dict(),synchronize_session=False)
     db.commit()
-    return user.first()
+    return user

@@ -1,7 +1,8 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, false
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from .database import Base
+from sqlalchemy.orm import relationship
 
 class Users(Base):
     __tablename__ = "users"
@@ -11,6 +12,7 @@ class Users(Base):
     age = Column(Integer, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()')) 
     login_id = Column(Integer,ForeignKey("login.id", ondelete="CASCADE"), nullable=False)
+    createdby = relationship("Login")
 
 class Login(Base):
     __tablename__ = "login"
