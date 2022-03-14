@@ -1,5 +1,4 @@
-from fastapi import status, HTTPException
-from fastapi import Depends
+from fastapi import Depends, status, HTTPException
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from . import schemas, database, models
@@ -32,5 +31,5 @@ def verify_access_token(token: str, crendential_exception):
 def get_current_user(token: str = Depends(oauth2_scheme), db : Session = Depends(database.get_db)):
     crendential_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"could not validate credentials", headers={"WWW-Authenticate":"Bearer"})
     token = verify_access_token(token, crendential_exception)
-    login_user = db.query(models.Login).filter(models.Login.id == token.id).first()
-    return login_user
+    user  = db.query(models.User).filter(models.User.id == token.id).first()
+    return user

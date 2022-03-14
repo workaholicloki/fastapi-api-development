@@ -2,9 +2,9 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from . import models
 from .database import engine
-from .routers import users, accounts, auth
-models.Base.metadata.create_all(bind=engine)
+from .routers import post, user, auth, vote
 
+models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 @app.get("/",response_class=HTMLResponse, include_in_schema= False )
@@ -179,6 +179,7 @@ def read_root():
                 '''
     return welcome_msg
 
-app.include_router(users.router)
-app.include_router(accounts.router)
+app.include_router(post.router)
+app.include_router(user.router)
 app.include_router(auth.router)
+app.include_router(vote.router)
