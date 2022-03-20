@@ -1,11 +1,21 @@
+from ast import Str
+import imp
+import string
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from . import models
+from fastapi.middleware.cors import CORSMiddleware
 from .database import engine
 from .routers import post, user, auth, vote
 
-models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 @app.get("/",response_class=HTMLResponse, include_in_schema= False )
 def read_root():
@@ -178,6 +188,10 @@ def read_root():
                 </html>
                 '''
     return welcome_msg
+
+@app.get("/test/")
+def test():
+    return {"Hello":"world"}
 
 app.include_router(post.router)
 app.include_router(user.router)
