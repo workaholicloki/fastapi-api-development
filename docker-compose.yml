@@ -20,7 +20,7 @@ services:
       - POSTGRES_DB=fastapi 
       - POSTGRES_PASSWORD=1234
     volumes:
-      - postgres-db: /var/lib/postgresql/data
+      - postgres-db:/var/lib/postgresql/data
 
 volumes:
   postgres-db:
