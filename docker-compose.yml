@@ -4,5 +4,23 @@ services:
     build: .
     ports: 
       - 8000:8000
-    env_file:
-      - /home/ubuntu/.env
+    environment:
+      - DATABASE_HOSTNAME=postgres
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=1234
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=fastapi
+      - SECRET_KEY=24276c8fafd6146cfc45abef146fd0555fc946a15852643c59e24b4c33f22ad4
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRY_MINUTES=300
+  
+  postgres:
+    image: 
+      environment:
+        - POSTGRES_DB=fastapi 
+        - POSTGRES_PASSWORD=1234
+      volumes:
+        - postgres-db: /var/lib/postgresql/data
+
+volumes:
+  postgres-db:
