@@ -15,7 +15,7 @@ services:
       - ACCESS_TOKEN_EXPIRY_MINUTES=300
   
   postgres:
-    image: 
+    image: postgres
       environment:
         - POSTGRES_DB=fastapi 
         - POSTGRES_PASSWORD=1234
